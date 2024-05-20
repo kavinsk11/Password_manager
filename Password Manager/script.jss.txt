@@ -1,0 +1,97 @@
+// script.js
+
+document.addEventListener('DOMContentLoaded', loadPasswords);
+document.getElementById('addBtn').addEventListener('click', addPassword);
+
+function addPassword() {
+  const website = document.getElementById('website').value;
+  const username = document.getElementById('username').value;
+  const password = document.getElementById('password').value;
+
+  if (website && username && password) {
+    const passwordList = document.getElementById('passwords');
+
+    const passwordEntry = {
+      website: website,
+      username: username,
+      password: password
+    };
+
+    savePassword(passwordEntry);
+
+    const li = createPasswordListItem(passwordEntry);
+    passwordList.appendChild(li);
+
+    document.getElementById('website').value = '';
+    document.getElementById('username').value = '';
+    document.getElementById('password').value = '';
+  } else {
+    alert('Please fill in all fields.');
+  }
+}
+
+function deletePassword(button) {
+  const li = button.parentElement;
+  const website = li.querySelector('.website').textContent;
+  li.remove();
+  removePassword(website);
+}
+
+function editPassword(button) {
+  const li = button.parentElement;
+  const website = li.querySelector('.website').textContent;
+  const usernameSpan = li.querySelector('.username');
+  const passwordSpan = li.querySelector('.password');
+
+  const newUsername = prompt('Edit Username:', usernameSpan.textContent);
+  const newPassword = prompt('Edit Password:', passwordSpan.textContent);
+
+  if (newUsername !== null && newUsername !== '' && newPassword !== null && newPassword !== '') {
+    usernameSpan.textContent = newUsername;
+    passwordSpan.textContent = newPassword;
+    updatePassword(website, newUsername, newPassword);
+  }
+}
+
+function createPasswordListItem(passwordEntry) {
+  const li = document.createElement('li');
+  li.innerHTML = `
+    <span class="website">${passwordEntry.website}</span> - 
+    <span class="username">${passwordEntry.username}</span> - 
+    <span class="password">${passwordEntry.password}</span>
+    <button class="edit" onclick="editPassword(this)">Edit</button>
+    <button onclick="deletePassword(this)">Delete</button>
+  `;
+  return li;
+}
+
+function savePassword(passwordEntry) {
+  let passwords = JSON.parse(localStorage.getItem('passwords')) || [];
+  passwords.push(passwordEntry);
+  localStorage.setItem('passwords', JSON.stringify(passwords));
+}
+
+function loadPasswords() {
+  const passwordList = document.getElementById('passwords');
+  let passwords = JSON.parse(localStorage.getItem('passwords')) || [];
+  passwords.forEach(passwordEntry => {
+    const li = createPasswordListItem(passwordEntry);
+    passwordList.appendChild(li);
+  });
+}
+
+function removePassword(website) {
+  let passwords = JSON.parse(localStorage.getItem('passwords')) || [];
+  passwords = passwords.filter(passwordEntry => passwordEntry.website !== website);
+  localStorage.setItem('passwords', JSON.stringify(passwords));
+}
+
+function updatePassword(website, newUsername, newPassword) {
+  let passwords = JSON.parse(localStorage.getItem('passwords')) || [];
+  const index = passwords.findIndex(passwordEntry => passwordEntry.website === website);
+  if (index !== -1) {
+    passwords[index].username = newUsername;
+    passwords[index].password = newPassword;
+    localStorage.setItem('passwords', JSON.stringify(passwords));
+  }
+}
